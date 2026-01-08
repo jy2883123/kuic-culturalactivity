@@ -1,0 +1,11 @@
+# 업로드 디렉토리 보안 설정
+# PHP 및 실행 가능한 스크립트 파일 실행 방지
+
+# PHP 파일 실행 차단
+<FilesMatch "\.(php|php3|php4|php5|php7|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# 디렉토리 리스팅 비활성화
+Options -Indexes

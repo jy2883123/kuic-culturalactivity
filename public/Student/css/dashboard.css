@@ -1,0 +1,442 @@
+/* Dashboard-specific styles */
+
+/* ========================================
+   Page Header
+   ======================================== */
+.page-header {
+    margin-bottom: 40px;
+}
+
+.page-greeting {
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+
+/* ========================================
+   Dashboard Grid
+   ======================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.dashboard-card {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--ku-crimson);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover::before {
+    transform: scaleX(1);
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: rgba(134, 38, 51, 0.2);
+}
+
+.card-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .card-icon-wrapper {
+    background: var(--ku-crimson);
+    transform: scale(1.05);
+}
+
+.card-icon {
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .card-icon {
+    filter: grayscale(1) brightness(2);
+}
+
+.card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.card-description {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.dashboard-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+    .page-greeting {
+        font-size: 2rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .dashboard-card {
+        padding: 24px;
+    }
+
+    .card-title {
+        font-size: 1.2rem;
+    }
+
+    .card-description {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   Dashboard Sections
+   ======================================== */
+.dashboard-section {
+    margin-top: 56px;
+}
+
+.section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.section-eyebrow {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.section-link {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ku-crimson);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.section-link:hover {
+    color: var(--ku-crimson-dark);
+}
+
+.section-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.section-alert,
+.section-empty {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ku-crimson);
+    font-weight: 600;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+/* ========================================
+   Preview Cards
+   ======================================== */
+.preview-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.preview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.preview-card-media {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--bg-soft);
+}
+
+.preview-card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.preview-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.status-approved {
+    background: #16a34a;
+}
+
+.status-pending {
+    background: #ea580c;
+}
+
+.status-rejected,
+.status-cancelled {
+    background: #dc2626;
+}
+
+.status-open {
+    background: var(--ku-crimson);
+}
+
+.preview-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.preview-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.preview-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.preview-description {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.preview-card-footer {
+    padding: 16px 0;
+    margin: 0 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.preview-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--ku-crimson);
+    text-decoration: none;
+}
+
+.preview-link:hover {
+    color: var(--ku-crimson-dark);
+}
+
+@media (max-width: 768px) {
+    .dashboard-section {
+        margin-top: 40px;
+    }
+
+    .section-card-grid {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scroll-snap-type: x proximity;
+    }
+
+    .section-card-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .section-card-grid > * {
+        flex: 0 0 65%;
+        max-width: 65%;
+        scroll-snap-align: start;
+    }
+
+    .preview-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+    .info-card {
+        padding: 18px;
+    }
+
+    .info-value {
+        font-size: 1.05rem;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .dashboard-card {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .card-title {
+        font-size: 1.05rem;
+    }
+
+    .card-description {
+        font-size: 0.9rem;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+    }
+
+    .section-header {
+        align-items: flex-start;
+    }
+
+    .section-card-grid {
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .section-card-grid > * {
+        flex: 0 0 80%;
+        max-width: 80%;
+    }
+
+    .preview-card {
+        min-width: 180px;
+    }
+
+    .preview-card-body {
+        padding: 14px 16px;
+        gap: 10px;
+    }
+
+    .preview-card-footer {
+        padding: 10px 16px;
+    }
+
+    .preview-title {
+        font-size: 1rem;
+    }
+
+    .preview-description {
+        font-size: 0.9rem;
+    }
+}

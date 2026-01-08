@@ -1,0 +1,268 @@
+<?php
+/**
+ * 관리자 강제 신청 처리
+ * 관리자가 학생을 프로그램에 강제로 등록
+ */
+
+require_once '../../../config/config_admin.php';
+
+$admin_id = $_SESSION['admin_id'] ?? null;
+$admin_name = $_SESSION['admin_name'] ?? null;
+
+// POST 요청만 허용
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: /Admin/ManageEnrollment/me-index.php');
+    exit();
+}
+
+// CSRF 토큰 검증
+$csrf_token = $_POST['csrf_token'] ?? '';
+if (!csrf_validate_token($csrf_token)) {
+    $_SESSION['me_error'] = '보안 토큰이 유효하지 않습니다. 다시 시도해주세요.';
+    header('Location: /Admin/ManageEnrollment/me-index.php');
+    exit();
+}
+
+try {
+    $activity_id = isset($_POST['activity_id']) ? (int)$_POST['activity_id'] : 0;
+    $student_id = trim($_POST['student_id'] ?? '');
+    $gown_size = normalize_gown_size($_POST['gown_size'] ?? null);
+
+    if ($activity_id <= 0) {
+        throw new Exception('Invalid activity ID.');
+    }
+
+    if (empty($student_id)) {
+        throw new Exception('Student ID is required.');
+    }
+
+    // 트랜잭션 시작
+    $pdo->beginTransaction();
+
+    // 프로그램 정보 확인
+    $activity_stmt = $pdo->prepare("
+        SELECT *
+        FROM cultural_activities
+        WHERE id = :id AND is_deleted = 0 AND is_active = 1
+        LIMIT 1
+    ");
+    $activity_stmt->execute(['id' => $activity_id]);
+    $activity = $activity_stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$activity) {
+        throw new Exception('Program not found or inactive.');
+    }
+    $requires_gown_size = activity_requires_gown_size($activity);
+    $gown_size_value = $requires_gown_size ? $gown_size : null;
+    if ($requires_gown_size && $gown_size_value === null) {
+        throw new Exception('Gown size (S/M/L) is required for this activity.');
+    }
+    if ($requires_gown_size && $gown_size_value !== null) {
+        $capMap = [
+            'S' => $activity['gown_capacity_s'] ?? null,
+            'M' => $activity['gown_capacity_m'] ?? null,
+            'L' => $activity['gown_capacity_l'] ?? null
+        ];
+        $size_cap = $capMap[$gown_size_value] ?? null;
+        if (!is_null($size_cap)) {
+            $size_count_stmt = $pdo->prepare("
+                SELECT COUNT(*) FROM cultural_activity_enrollments
+                WHERE activity_id = :activity_id
+                  AND gown_size = :gown_size
+                  AND status = 'approved'
+            ");
+            $size_count_stmt->execute([
+                'activity_id' => $activity_id,
+                'gown_size' => $gown_size_value
+            ]);
+            $size_count = (int)$size_count_stmt->fetchColumn();
+            if ($size_count >= (int)$size_cap) {
+                throw new Exception('Selected gown size has reached its limit.');
+            }
+        }
+    }
+
+    // 정원 확인 (관리자는 정원 초과해도 등록 가능, 경고만 표시)
+    $capacity_warning = '';
+    if (!is_null($activity['capacity']) && $activity['current_enrollment'] >= $activity['capacity']) {
+        $capacity_warning = ' (Warning: This program is at or over capacity)';
+    }
+
+    // 학생 정보 조회
+    $student_stmt = $pdo->prepare("
+        SELECT applicant_name, email
+        FROM uwayxlsx_current
+        WHERE application_no = :application_no
+        LIMIT 1
+    ");
+    $student_stmt->execute(['application_no' => $student_id]);
+    $student_profile = $student_stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$student_profile) {
+        throw new Exception('Student not found with ID: ' . $student_id);
+    }
+
+    $student_name = $student_profile['applicant_name'];
+
+    // 기존 신청 확인
+    $existing_stmt = $pdo->prepare("
+        SELECT id, status
+        FROM cultural_activity_enrollments
+        WHERE activity_id = :activity_id AND student_id = :student_id
+        LIMIT 1
+    ");
+    $existing_stmt->execute([
+        'activity_id' => $activity_id,
+        'student_id' => $student_id
+    ]);
+    $existing = $existing_stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existing) {
+        if ($existing['status'] === 'cancelled') {
+            // 취소된 신청을 재활용 (UPDATE)
+            $reactivate_stmt = $pdo->prepare("
+                UPDATE cultural_activity_enrollments
+                SET status = 'approved',
+                    student_name = :student_name,
+                    gown_size = :gown_size,
+                    enrollment_type = 'admin',
+                    enrolled_at = NOW(),
+                    fee_paid = 0,
+                    checked_in = 0,
+                    cancelled_by = NULL,
+                    admin_reason = NULL
+                WHERE id = :id
+            ");
+            $reactivate_stmt->execute([
+                'id' => $existing['id'],
+                'student_name' => $student_name,
+                'gown_size' => $gown_size_value
+            ]);
+
+            $enrollment_id = $existing['id'];
+        } else {
+            // 이미 신청되어 있음
+            throw new Exception('Student has already enrolled in this activity with status: ' . $existing['status']);
+        }
+    } else {
+        // 신규 신청 (INSERT)
+        $insert_stmt = $pdo->prepare("
+            INSERT INTO cultural_activity_enrollments (
+                activity_id,
+                student_id,
+                student_name,
+                gown_size,
+                status,
+                enrollment_type,
+                enrolled_at
+            ) VALUES (
+                :activity_id,
+                :student_id,
+                :student_name,
+                :gown_size,
+                'approved',
+                'admin',
+                NOW()
+            )
+        ");
+        $insert_stmt->execute([
+            'activity_id' => $activity_id,
+            'student_id' => $student_id,
+            'student_name' => $student_name,
+            'gown_size' => $gown_size_value
+        ]);
+
+        $enrollment_id = $pdo->lastInsertId();
+    }
+
+    // IP 주소 추출 (Cloudflare 우선)
+    $client_ip = null;
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $client_ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+        $client_ip = $_SERVER['HTTP_X_REAL_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        $client_ip = is_string($forwarded) && strpos($forwarded, ',') !== false
+            ? trim(explode(',', $forwarded)[0])
+            : $forwarded;
+    } else {
+        $client_ip = $_SERVER['REMOTE_ADDR'] ?? null;
+    }
+
+    // 신청 이력 기록
+    $history_stmt = $pdo->prepare("
+        INSERT INTO cultural_activity_enrollment_history
+        (enrollment_id, student_id, student_name, activity_id, action, action_details, ip_address)
+        VALUES (:enrollment_id, :student_id, :student_name, :activity_id, :action, :action_details, :ip_address)
+    ");
+
+    $action = $existing ? 're-enrolled' : 'enrolled';
+    $action_details = json_encode([
+        'enrolled_by' => 'admin',
+        'admin_id' => $admin_id,
+        'admin_name' => $admin_name
+    ], JSON_UNESCAPED_UNICODE);
+
+    $history_stmt->execute([
+        'enrollment_id' => $enrollment_id,
+        'student_id' => $student_id,
+        'student_name' => $student_name,
+        'activity_id' => $activity_id,
+        'action' => $action,
+        'action_details' => $action_details,
+        'ip_address' => get_client_ip()
+    ]);
+
+    // 활동의 current_enrollment 증가
+    $update_count_stmt = $pdo->prepare("
+        UPDATE cultural_activities
+        SET current_enrollment = current_enrollment + 1
+        WHERE id = :id
+    ");
+    $update_count_stmt->execute(['id' => $activity_id]);
+
+    // 관리자 로그 기록
+    $log_stmt = $pdo->prepare("
+        INSERT INTO cultural_activity_admin_logs (admin_id, activity_id, action, details, ip_address)
+        VALUES (:admin_id, :activity_id, 'force_enroll_student', :details, :ip_address)
+    ");
+
+    $log_details = json_encode([
+        'enrollment_id' => $enrollment_id,
+        'student_id' => $student_id,
+        'student_name' => $student_name,
+        'program_name' => $activity['program_name'],
+        'admin_name' => $admin_name,
+        'gown_size' => $gown_size_value
+    ], JSON_UNESCAPED_UNICODE);
+
+    $log_stmt->execute([
+        'admin_id' => $admin_id,
+        'activity_id' => $activity_id,
+        'details' => $log_details,
+        'ip_address' => get_client_ip()
+    ]);
+
+    $pdo->commit();
+
+    $_SESSION['me_success'] = 'Student ' . htmlspecialchars($student_name, ENT_QUOTES, 'UTF-8') . ' (' . htmlspecialchars($student_id, ENT_QUOTES, 'UTF-8') . ') has been enrolled successfully.' . $capacity_warning;
+    header('Location: /Admin/ManageEnrollment/me-detail.php?id=' . $activity_id);
+    exit();
+
+} catch (Exception $e) {
+    // 트랜잭션 롤백
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    error_log('Force enroll error: ' . $e->getMessage());
+    $_SESSION['me_error'] = $e->getMessage();
+
+    if ($activity_id > 0) {
+        header('Location: /Admin/ManageEnrollment/me-detail.php?id=' . $activity_id);
+    } else {
+        header('Location: /Admin/ManageEnrollment/me-index.php');
+    }
+    exit();
+}

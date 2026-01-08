@@ -1,0 +1,302 @@
+/* ========================================
+   CSS Variables
+   ======================================== */
+:root {
+    --ku-crimson: #862633;
+    --ku-crimson-dark: #6b1d28;
+    --ku-crimson-light: #a53345;
+    --bg-soft: #f6f8fb;
+    --border-color: #e4dde2;
+    --text-main: #2f2f2f;
+    --text-muted: #777777;
+}
+
+/* ========================================
+   Reset & Base Styles
+   ======================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-soft);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+.header {
+    background: #ffffff;
+    color: var(--text-main);
+    padding: 24px 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-content {
+    max-width: 1350px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-left > a {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.back-btn {
+    background: transparent;
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.back-btn:hover {
+    background: var(--ku-crimson);
+    color: #ffffff;
+    border-color: var(--ku-crimson);
+}
+
+.header-logo {
+    width: 48px;
+    height: 48px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.header-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: var(--ku-crimson);
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-badge {
+    padding: 6px 16px;
+    background: var(--bg-soft);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ku-crimson);
+    border: 1px solid var(--border-color);
+}
+
+.btn-logout {
+    padding: 10px 24px;
+    background: var(--ku-crimson);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-logout:hover {
+    background: var(--ku-crimson-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(134, 38, 51, 0.25);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--ku-crimson);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--ku-crimson-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(134, 38, 51, 0.25);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.page-header {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+
+.page-header-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--text-main);
+}
+
+.page-header p {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.page-header-highlight {
+    min-width: 160px;
+    background: var(--bg-soft);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+}
+
+/* ========================================
+   Main Content
+   ======================================== */
+.main-content {
+    flex: 1;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 32px;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+.footer {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 32px;
+    font-size: 0.875rem;
+    margin-top: auto;
+    background: transparent;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+    .header {
+        padding: 20px;
+    }
+
+    .header-content {
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .header-right {
+        align-self: flex-end;
+        padding: 8px;
+    }
+
+    .header-title h1 {
+        font-size: 1.25rem;
+    }
+
+    .main-content {
+        padding: 32px 20px;
+    }
+
+    .footer {
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 612px) {
+    .header {
+        padding: 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .header-right {
+        align-self: flex-end;
+        padding: 8px;
+    }
+
+    .header-title h1 {
+        font-size: 1.25rem;
+    }
+
+    .main-content {
+        padding: 32px 20px;
+    }
+
+    .footer {
+        padding: 24px 20px;
+    }
+}
